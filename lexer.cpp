@@ -20,7 +20,8 @@ using namespace std;
 #define ASCII_UNUSED_5 157
 
 enum TokenType {
-    NUMERAL_TOK,
+    INTEGER_TOK,
+    FLOAT_TOK,
     STRING_TOK,
     CHAR_TOK,
     OPERATOR_TOK,
@@ -45,7 +46,8 @@ class Token {
         }
         string getType() {
             switch (type){
-                case NUMERAL_TOK: return STRINGIFY(NUMERAL_TOK);
+                case INTEGER_TOK: return STRINGIFY(INTEGER_TOK);
+                case FLOAT_TOK: return STRINGIFY(FLOAT_TOK);
                 case STRING_TOK: return STRINGIFY(STRING_TOK);
                 case CHAR_TOK: return STRINGIFY(CHAR_TOK);
                 // case CONSTANT_TOK: return STRINGIFY(CONSTANT_TOK);
@@ -119,11 +121,14 @@ bool isOperator(char c) {
         return false;
     }
 }
-
-bool isTokNumeral(string tok) {
-
+bool isTokInteger(string tok) {
     for (int i = 0; i < tok.length(); i++) {
-
+        if (!isNum(tok.at(i))) return false;
+    }
+    return true;
+}
+bool isTokFloat(string tok) {
+    for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i)) && tok.at(i) != '.') return false;
     }
     return true;
@@ -142,7 +147,8 @@ bool isTokKeyword(string tok) {
 bool isTokIdentifier(string tok) {
     if (isNum(tok.at(0)) || 
         isTokKeyword(tok) || 
-        tok.at(0) == '\'' // Is CHAR_TOK
+        tok.at(0) == '\'' || // Is CHAR_TOK
+        tok.at(0) == '\"'   // Is STRING_TOK
     ) return false;
 
     for (int i = 0; i < tok.length(); i++) {
@@ -159,17 +165,23 @@ bool isTokSemicolon(string tok) {
     return false;
 }
 bool isTokCharLiteral(string tok) {
-    if (tok.length() != 3 && // "\'h\'".length() == 3 -> true
-        tok.at(0) != '\'' && 
-        tok.at(2) != '\'' && 
-        tok.at(1) < ASCII_PRINTABLE_FIRST && (
-            ((u_int8_t) tok.at(1)) == ASCII_UNUSED_1 ||
-            ((u_int8_t) tok.at(1)) == ASCII_UNUSED_2 || 
-            ((u_int8_t) tok.at(1)) == ASCII_UNUSED_3 || 
-            ((u_int8_t) tok.at(1)) == ASCII_UNUSED_4 || 
-            ((u_int8_t) tok.at(1)) == ASCII_UNUSED_5
-        )
-    ) {return false;} 
+    if (tok.length() != 3 || // "\'h\'".length() == 3 -> true
+        tok.at(0) != '\'' || 
+        tok.at(2) != '\'' || 
+        tok.at(1) < ASCII_PRINTABLE_FIRST ||
+        ((u_int8_t) tok.at(1)) == ASCII_UNUSED_1 ||
+        ((u_int8_t) tok.at(1)) == ASCII_UNUSED_2 || 
+        ((u_int8_t) tok.at(1)) == ASCII_UNUSED_3 || 
+        ((u_int8_t) tok.at(1)) == ASCII_UNUSED_4 || 
+        ((u_int8_t) tok.at(1)) == ASCII_UNUSED_5
+    ) return false;
+    return true;
+}
+bool isTokStringLiteral(string tok) {
+    if (tok.length() < 2 ||
+        tok.at(0) != '\"' ||
+        tok.at(tok.length() - 1) != '\"'
+    ) return false;
     return true;
 }
 TokenType categorize(string tok) {
@@ -177,10 +189,12 @@ TokenType categorize(string tok) {
     if (isTokSemicolon(tok)) return SEMICOLON_TOK;
     else if (isTokSeparator(tok)) return SEPARATOR_TOK;
     else if (isTokOperator(tok)) return OPERATOR_TOK;
-    else if (isTokNumeral(tok)) return NUMERAL_TOK; // TODO
+    else if (isTokInteger(tok)) return INTEGER_TOK;
+    else if (isTokFloat(tok)) return FLOAT_TOK;
     else if (isTokKeyword(tok)) return KEYWORD_TOK;
     else if (isTokIdentifier(tok)) return IDENTIFIER_TOK;
     else if (isTokCharLiteral(tok)) return CHAR_TOK;
+    else if (isTokStringLiteral(tok)) return STRING_TOK;
 
     cout << "Invalid token: " << tok << endl;
     return INVALID_TOK;
@@ -202,8 +216,8 @@ int main(int argc, char **argv) {
         flushTok(tok, toks);
     };
     auto handleCharLiteral = [flushTok] (ifstream &f, string &tok, vector<string> &toks) {
-        if (tok.length() > 0) {
-            cerr << "Error in HandleCharLiteral: Token buffer should be empty" << endl; // Temporary
+        if (tok.length() > 0) { // Temporary
+            cerr << "Error in HandleCharLiteral: Token buffer should be empty" << endl; 
             exit(1);
         }
 
@@ -217,7 +231,23 @@ int main(int argc, char **argv) {
         }
         flushTok(tok, toks);
     };
+    auto handleStringLiteral = [flushTok] (ifstream &f, string &tok, vector<string> &toks) {
+        if (tok.length() > 0) { // Temporary
+            cerr << "Error in HandleStringLiteral: Token buffer should be empty" << endl; 
+            exit(1);
+        }
 
+        tok = "";
+        char ch = f.get();
+        tok.push_back(ch);
+
+        while ((ch = f.get()) && ch != EOF) {
+            tok.push_back(ch);
+            if (ch == '\"') break;
+        }
+        flushTok(tok, toks);
+
+    };
 
     
     ifstream f("test.kal");
@@ -236,7 +266,11 @@ int main(int argc, char **argv) {
 
         if (c == '\'') {
             handleCharLiteral(f, tok, toks);
-        } else if (isSeparator(c) || isOperator(c) || c == ';') {
+
+        } else if (c == '\"') {
+            handleStringLiteral(f, tok, toks);
+
+        }else if (isSeparator(c) || isOperator(c) || c == ';') {
             handleSingleCharTok(c, tok, toks);
 
         } else if(!isWhitespace(c)) {  // general case
