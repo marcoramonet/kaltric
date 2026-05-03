@@ -265,7 +265,6 @@ int main(int argc, char **argv) {
                 exit(2);
             }
         }
-        cout << "handleCharLiteral: " << ch << " " << tok << " ";
         flushTok(tok, toks);
         f.seekg(-1, fstream::cur);
     };
@@ -287,9 +286,24 @@ int main(int argc, char **argv) {
                 exit(2);
             }
         }
-        cout << "handleStringLiteral: " << ch << " " << tok << " ";
         flushTok(tok, toks);
         f.seekg(-1, fstream::cur);
+    };
+    auto handleOperator = [flushTok] (ifstream &f, string &tok, vector<string> &toks, char &ch) {
+        flushTok(tok, toks);
+        tok.push_back(ch);
+        f.seekg(1, fstream::cur);
+        ch = f.peek();
+
+        if (isOperator(ch)) { // Double Operator Token
+            tok.push_back(ch);
+            flushTok(tok, toks);
+        }
+        else { // Single Operator Token
+            flushTok(tok, toks);
+            f.seekg(-1, fstream::cur);
+        }
+
     };
 
     ifstream f("test.kal");
@@ -312,24 +326,9 @@ int main(int argc, char **argv) {
             handleStringLiteral(f, tok, toks);
 
         } else if (isOperator(c)) {
-            flushTok(tok, toks);
-            tok.push_back(c);
-            f.seekg(1, fstream::cur);
-            c = f.peek();
-
-            if (isOperator(c)) { // Double Operator Token
-                tok.push_back(c);
-                f.seekg(1, fstream::cur);
-                flushTok(tok, toks);
-            }
-            else { // Single Operator Token
-                flushTok(tok, toks);
-                f.seekg(-1, fstream::cur);
-            }
-            
+            handleOperator(f, tok, toks, c);            
 
         } else if (isSeparator(c) || c == ';') {
-            cout << c << endl;
             handleSingleCharTok(c, tok, toks);
 
         } else if(!isWhitespace(c)) {  // general case
