@@ -121,7 +121,6 @@ bool isOperator(char c) {
 }
 
 bool isTokNumeral(string tok) {
-    // if (tok.at(0) == '\"') ;
 
     for (int i = 0; i < tok.length(); i++) {
 
@@ -191,18 +190,12 @@ int main(int argc, char **argv) {
 
     // Define lambdas
     auto flushTok = [] (string &tok, vector<string> &toks) {
-        // cout << "flushTok:" << endl;
-        // cout << "\t" << "tok.length(): " << tok.length() << endl;
         if (tok.length() > 0) {
             toks.push_back(tok);
             tok = "";
         }
     };
     auto handleSingleCharTok = [flushTok] (char &c, string &tok, vector<string> &toks) {
-        // cout << "handleSingleCharTok:" << endl;
-        // cout << "\t" << "tok.length(): "<< tok.length() << endl;
-        // cout << "\t" << "tok: "<< tok << endl;
-        // cout << "\t" << "c: "<< c << endl;
 
         flushTok(tok, toks); // Flush curr tok buff if not empty
         tok.push_back(c); // Add and flush new separator tok
@@ -249,9 +242,7 @@ int main(int argc, char **argv) {
         } else if(!isWhitespace(c)) {  // general case
             tok.push_back(c);
 
-        } /* else if (c == '\'') { 
-            handleCharLiteral();
-        }  */else { // Flush tok
+        } else { // Flush tok
             flushTok(tok, toks);
         }
 
