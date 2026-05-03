@@ -1,0 +1,11 @@
+int x = 5 + 5;
+int y=561324;
+double z=3456.3456
+if(true){
+    {
+        x=(y+z);
+    }
+}else{
+    char a = 't';
+    string s = "aoisu dhg jnv";
+}
