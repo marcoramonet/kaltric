@@ -25,6 +25,7 @@ enum TokenType {
     STRING_TOK,
     CHAR_TOK,
     OPERATOR_TOK,
+    DOUBLE_OPERATOR_TOK,
     KEYWORD_TOK,
     IDENTIFIER_TOK,
     SEPARATOR_TOK,
@@ -50,8 +51,8 @@ class Token {
                 case FLOAT_TOK: return STRINGIFY(FLOAT_TOK);
                 case STRING_TOK: return STRINGIFY(STRING_TOK);
                 case CHAR_TOK: return STRINGIFY(CHAR_TOK);
-                // case CONSTANT_TOK: return STRINGIFY(CONSTANT_TOK);
                 case OPERATOR_TOK: return STRINGIFY(OPERATOR_TOK);
+                case DOUBLE_OPERATOR_TOK: return STRINGIFY(DOUBLE_OPERATOR_TOK);
                 case KEYWORD_TOK: return STRINGIFY(KEYWORD_TOK);
                 case IDENTIFIER_TOK: return STRINGIFY(IDENTIFIER_TOK);
                 case SEPARATOR_TOK: return STRINGIFY(SEPARATOR_TOK);
@@ -96,8 +97,6 @@ bool isSeparator(char c) {
         case '[':
         case ']':
         case ',':
-        case '<':
-        case '>':
         case EOF:
         return true;
 
@@ -109,12 +108,21 @@ bool isSeparator(char c) {
 }
 
 bool isOperator(char c) {
+    
+
     switch (c) {
     case '+':
     case '-':
     case '*':
     case '/':
     case '=':
+    case '<':
+    case '>':
+    case '^':
+    case '!':
+    case '&':
+    case '|':
+    case '?':
         return true;
     
     default:
@@ -140,7 +148,8 @@ bool isTokOperator(string tok) {
 bool isTokKeyword(string tok) {
     if (tok == "if" || tok == "else" || tok == "for" || tok == "while" ||
         tok == "int" || tok == "char" || tok == "bool" || tok == "true" || 
-        tok == "false" || tok == "double" || tok == "string"
+        tok == "false" || tok == "double" || tok == "string" || tok == "return" ||
+        tok == "public" || tok == "private" || tok == "long" || tok == "short"
     ) return true;
     return false;
 }
@@ -184,10 +193,33 @@ bool isTokStringLiteral(string tok) {
     ) return false;
     return true;
 }
+/* Possible operators: 
+    Ideas: := # @ $ % \ : ~ +? -? *? /? =? <? >? ^? @? :~ ~: =~ ** <...> 
+*/
+bool isTokDoubleOperator(string tok) {
+    
+    if (tok.length() != 2) return false;
+    if (tok != "==" &&
+        tok != "!=" && 
+        tok != "+=" && 
+        tok != "-=" && 
+        tok != "*=" && 
+        tok != "/=" && 
+        tok != "&&" && 
+        tok != "||" && 
+        tok != "<<" && 
+        tok != ">>" && 
+        tok != "++" && 
+        tok != "--"
+    ) return false;
+    return true;
+}
 TokenType categorize(string tok) {
-
+    
+    // Order is imperative
     if (isTokSemicolon(tok)) return SEMICOLON_TOK;
     else if (isTokSeparator(tok)) return SEPARATOR_TOK;
+    else if (isTokDoubleOperator(tok)) return DOUBLE_OPERATOR_TOK;
     else if (isTokOperator(tok)) return OPERATOR_TOK;
     else if (isTokInteger(tok)) return INTEGER_TOK;
     else if (isTokFloat(tok)) return FLOAT_TOK;
@@ -225,15 +257,21 @@ int main(int argc, char **argv) {
         char ch = f.get();
         tok.push_back(ch);
 
-        while ((ch = f.get()) && ch != EOF) {
+        while ((ch = f.get())) {
             tok.push_back(ch);
             if (ch == '\'') break;
+            if (ch == EOF) {
+                cout << "Error unmatched single quote in char literal" << endl;
+                exit(2);
+            }
         }
+        cout << "handleCharLiteral: " << ch << " " << tok << " ";
         flushTok(tok, toks);
+        f.seekg(-1, fstream::cur);
     };
     auto handleStringLiteral = [flushTok] (ifstream &f, string &tok, vector<string> &toks) {
         if (tok.length() > 0) { // Temporary
-            cerr << "Error in HandleStringLiteral: Token buffer should be empty" << endl; 
+            cerr << "Error in HandleStringLiteral: Token buffer should be empty: Previous token is incorrect." << endl; 
             exit(1);
         }
 
@@ -241,27 +279,30 @@ int main(int argc, char **argv) {
         char ch = f.get();
         tok.push_back(ch);
 
-        while ((ch = f.get()) && ch != EOF) {
+        while ((ch = f.get())) {
             tok.push_back(ch);
             if (ch == '\"') break;
+            if (ch == EOF) {
+                cout << "Error unmatched double quote in string literal" << endl;
+                exit(2);
+            }
         }
+        cout << "handleStringLiteral: " << ch << " " << tok << " ";
         flushTok(tok, toks);
-
+        f.seekg(-1, fstream::cur);
     };
 
-    
     ifstream f("test.kal");
     string tok;
     char c;
     vector<string> toks;
     
-   
-
-    while ((c = f.peek()/* f.get() */)) {
+    while ((c = f.peek())) {
         if (c == EOF) { // Flush last token
             flushTok(tok, toks);
             break;
         }
+
 
 
         if (c == '\'') {
@@ -270,13 +311,31 @@ int main(int argc, char **argv) {
         } else if (c == '\"') {
             handleStringLiteral(f, tok, toks);
 
-        }else if (isSeparator(c) || isOperator(c) || c == ';') {
+        } else if (isOperator(c)) {
+            flushTok(tok, toks);
+            tok.push_back(c);
+            f.seekg(1, fstream::cur);
+            c = f.peek();
+
+            if (isOperator(c)) { // Double Operator Token
+                tok.push_back(c);
+                f.seekg(1, fstream::cur);
+                flushTok(tok, toks);
+            }
+            else { // Single Operator Token
+                flushTok(tok, toks);
+                f.seekg(-1, fstream::cur);
+            }
+            
+
+        } else if (isSeparator(c) || c == ';') {
+            cout << c << endl;
             handleSingleCharTok(c, tok, toks);
 
         } else if(!isWhitespace(c)) {  // general case
             tok.push_back(c);
 
-        } else { // Flush tok
+        } else { // Flush tok in whitespace
             flushTok(tok, toks);
         }
 
