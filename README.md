@@ -1,5 +1,6 @@
 # Kaltric
-Kaltric is a programming language as a study on compiler design and construction.
+Kaltric is a programming language as a study on compiler design and construction. 
+Currently is in an early stage, but eventually it will become a playground for lexical and syntactical exploration.
 
 ## TODOs: 
 ### Lexer:
