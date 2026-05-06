@@ -15,3 +15,6 @@ out:
 
 clean: 
 	rm $(BIN)
+
+x:
+	echo $(SRC)
