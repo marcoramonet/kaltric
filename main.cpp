@@ -7,16 +7,15 @@
 
 #include "Tester.hpp"
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 
 #define TEST0 0
+#define TEST1 1
 
 int main(int argc, char **argv) {
     
     Tester t;
     t.setup(TEST_VERBOSE);
-    t.setSelectedUnits({TEST0});
+    t.setSelectedUnits({TEST0, TEST1});
     t.run();
     
     return 0;

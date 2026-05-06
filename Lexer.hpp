@@ -30,11 +30,7 @@ class Lexer {
     bool isWhitespace(char c);
     bool isSeparator(char c);
     bool isOperator(char c);
-    void flushTok(std::vector<Token> &lexes, std::string &tok, FilePosition &pos);
-    void handleSingleCharTok(char &c, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
-    void handleCharLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
-    void handleStringLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
-    void handleOperator(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, char &ch, FilePosition &pos);
+    
     bool isTokInteger(std::string tok);
     bool isTokFloat(std::string tok);
     bool isTokOperator(std::string tok);
@@ -46,6 +42,15 @@ class Lexer {
     bool isTokStringLiteral(std::string tok);
     bool isTokDoubleOperator(std::string tok);
     TokenType categorize(std::string tok);
+
+
+    
+    void flushTok(std::vector<Token> &lexes, std::string &tok, FilePosition &pos);
+    void handleSingleCharTok(char &c, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
+    void handleCharLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
+    void handleStringLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos);
+    void handleOperator(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, char &ch, FilePosition &pos);
+    
     std::vector<Token> tokenize(std::string filename);
 };
                                             

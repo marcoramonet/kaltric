@@ -4,7 +4,7 @@ CXXFLAGS = -Wall
 
 ARGS = $(MAKECMDGOALS)
 HEADERS = src/*.hpp
-SRC = $(wildcard src/*.cpp)
+SRC = $(wildcard *.cpp)
 BIN = out
 
 
@@ -15,6 +15,3 @@ out:
 
 clean: 
 	rm $(BIN)
-
-x:
-	echo $(SRC)

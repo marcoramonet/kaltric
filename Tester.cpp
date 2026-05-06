@@ -8,21 +8,6 @@
 #include "Token.hpp"
 #include "Lexer.hpp"
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
-
-// std::string Tester::testPath(std::string relPath) {
-//     std::stringstream ss;
-//     #ifdef WORKPLACE_FOLDER
-//     std::cout << "Testtesteste" << std::endl;
-//     ss << TOSTRING(WORKSPACE_FOLDER) << "/";
-//     #endif
-//     ss << relPath;
-//     std::cout << ss.str() << std::endl;
-//     return ss.str();
-// }
-
 void Tester::setup(){
     Tester::tUnits.push_back(
         TestUnit(
