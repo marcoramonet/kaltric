@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
     
     Tester t;
     t.setup(TEST_VERBOSE);
+    t.setSelectedUnits({0});
     t.run();
     
     return 0;

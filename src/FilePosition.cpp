@@ -14,21 +14,18 @@ std::vector<unsigned int> FilePosition::getAbsolute() {
 unsigned int FilePosition::getLine(){
     return line;
 }
-unsigned int FilePosition::getChar(){
+unsigned int FilePosition::getCol(){
     return col;
 }
 void FilePosition::setLine(unsigned int l) {
     line = l;
 }
-void FilePosition::setPos(unsigned int pos) {
+void FilePosition::setCol(unsigned int pos) {
     col = pos;
 }
 unsigned int FilePosition::operator++(int) {
     col++;
     return this->col;
-}
-void FilePosition::character() {
-    col++;
 }
 void FilePosition::newLine() {
     col = 1;

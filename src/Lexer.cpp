@@ -67,7 +67,7 @@ void Lexer::flushTok(std::vector<Token> &lexes, std::string &tok, FilePosition &
         lexes.push_back(
             Token(categorize(tok), 
             tok, 
-            FilePosition(pos.getLine(), pos.getChar() - tok.length()))
+            FilePosition(pos.getLine(), pos.getCol() - tok.length()))
         );
         tok = "";
     }
@@ -114,6 +114,7 @@ void Lexer::handleStringLiteral(std::ifstream &f, std::string &tok, std::vector<
 
     while ((ch = f.get())) {
         tok.push_back(ch);
+        pos++;
         if (ch == '\"') break;
         if (ch == EOF) {
             std::cout << "Error unmatched double quote in string literal" << std::endl;
@@ -138,7 +139,6 @@ void Lexer::handleOperator(std::ifstream &f, std::string &tok, std::vector<Token
         flushTok(lexes, tok, pos);
         f.seekg(-1, std::fstream::cur);
     }
-
 }
 
 bool Lexer::isTokInteger(std::string tok) {
@@ -279,6 +279,7 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
 
         } else if(!isWhitespace(c)) {  // general case
             tok.push_back(c);
+            curPos++;
 
         } else { // Flush tok in whitespace
             flushTok(tokens, tok, curPos);
@@ -289,7 +290,7 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
         c = f.peek();
         if (c != EOF) {
             if (c == '\n') curPos.newLine();
-            else curPos++;
+            // else curPos++;
 
         } else break;
     }

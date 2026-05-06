@@ -13,12 +13,11 @@ class FilePosition {
     FilePosition();
     FilePosition(unsigned int l, unsigned int c);
     unsigned int getLine();
-    unsigned int getChar();
+    unsigned int getCol();
     std::vector<unsigned int> getAbsolute();
     void setLine(unsigned int l);
-    void setPos(unsigned int pos);
+    void setCol(unsigned int pos);
     unsigned int operator++(int);
-    void character();
     void newLine();
     std::string toString();
     bool operator==(FilePosition rhs);

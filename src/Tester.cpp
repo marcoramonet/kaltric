@@ -109,6 +109,10 @@ void Tester::setup(u_int8_t fl) {
     Tester::setup();
 }
 
+void Tester::setSelectedUnits(std::vector<int> units) {
+    selectedIndices = units;
+}
+
 void Tester::printError(int i, int j, ErrorType errT) {
 
     std::cout << "\033[1;31mError\033[0m";
@@ -134,27 +138,29 @@ void Tester::run() {
 
     std::cout << "Running tests..." << std::endl;
 
-    for (int i = 0; i < Tester::tUnits.size(); i++) {
+    for (int i = 0; i < selectedIndices.size(); i++) {
+        int currUnitIdx = selectedIndices.at(i);
+
         std::cout << "\033[1;32mTest \033[0m" << i << "\033[1;32m:\033[0m" << std::endl;
+        
+        outToks = lexer.tokenize(tUnits.at(currUnitIdx).filename);
 
-        outToks = lexer.tokenize(tUnits.at(i).filename);
-
-        if (outToks.size() != tUnits.at(i).toks.size()) {
+        if (outToks.size() != tUnits.at(currUnitIdx).toks.size()) {
             std::cout << "Number of tokens does not equal test. Test failed." << std::endl;
             break;
         }
 
 
         for (int j = 0; j < outToks.size(); j++) {
-            if (tUnits.at(i).toks.at(j).getType() != outToks.at(j).getType()) {
+            if (tUnits.at(currUnitIdx).toks.at(j).getType() != outToks.at(j).getType()) {
                 printError(i, j, TOK_TYPE);
                 std::cout << std::endl;
                 
-            } else if (tUnits.at(i).toks.at(j).getToken() != outToks.at(j).getToken()) {
+            } else if (tUnits.at(currUnitIdx).toks.at(j).getToken() != outToks.at(j).getToken()) {
                 printError(i, j, TOK_VAL);
                 std::cout << std::endl;
                 
-            } else if (tUnits.at(i).toks.at(j).getPos() != outToks.at(j).getPos()) {
+            } else if (tUnits.at(currUnitIdx).toks.at(j).getPos() != outToks.at(j).getPos()) {
                 printError(i, j, TOK_POS);
                 std::cout << std::endl;
                 
@@ -163,9 +169,9 @@ void Tester::run() {
 
         if (flags & TEST_VERBOSE) {
             std::cout << outToks.size() << " tokens (verbose):" << std::endl;
-            std::cout << "Test unit " << i << "\t" << tUnits.at(i).filename << " tokenized" << std::endl;
+            std::cout << "Test unit " << i << "\t" << tUnits.at(currUnitIdx).filename << " tokenized" << std::endl;
             for (int j = 0; j < outToks.size(); j++) {
-                std::cout << tUnits.at(i).toks.at(j).toString() << "\t" << outToks.at(j).toString() << std::endl;
+                std::cout << tUnits.at(currUnitIdx).toks.at(j).toString() << "\t" << outToks.at(j).toString() << std::endl;
             }
         }
         std::cout << std::endl;

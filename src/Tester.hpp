@@ -28,15 +28,20 @@ class Tester {
 
     private:
     std::vector<TestUnit> tUnits;
-    u_int8_t flags;
+    u_int8_t flags = 0b00000000;
+    std::vector<int> selectedIndices = {};
+
     Lexer lexer = Lexer();
     std::vector<Token> outToks;
+
 
     void printError(int i, int j, ErrorType errT);
 
     public:
     void setup();
     void setup(u_int8_t fl);
+    void setSelectedUnits(std::vector<int> units);
+    std::vector<int> getSelected() {return selectedIndices;}
     void run();
 };
 
