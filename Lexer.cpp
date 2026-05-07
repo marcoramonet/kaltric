@@ -1,4 +1,42 @@
 #include "Lexer.hpp"
+#include "utils.hpp"
+
+LexState::LexState() {
+    tokBuf = "";
+    c = EOF;
+    tokens = {};
+    currPos = FilePosition();
+    valid = false;
+}
+LexState::LexState(std::string filePath) : file(filePath) {
+    if (!file.is_open()) {
+        std::cout << "Error opening file" << std::endl;
+        valid = false;
+    }
+    // file = f;
+    tokBuf = "";
+    c = EOF;
+    tokens = {};
+    currPos = FilePosition();
+    valid = true;
+}
+
+std::string LexState::toString() {
+    std::stringstream ss;
+    ss << valid << "\n" << 
+    "Tokens: " << "\n";
+
+    for (int i = 0; i < tokens.size(); i++) {
+        ss << "\t" << tokens.at(i).toString() << "\n";
+    }
+
+    ss << "tokBuf: " << tokBuf << "\n";
+
+    ss << "currPos: " << currPos.toString() << "\n" <<
+    "c: " << c << "\n";
+
+    return ss.str();
+}
 
 bool Lexer::isNum(char c) {
     if (c >= ASCII_NUM_FIRST && c <= ASCII_NUM_LAST) return true;
@@ -15,7 +53,7 @@ bool Lexer::isWhitespace(char c) {
     switch (c) {
         case ' ':
         case '\t':
-        case '\n':
+        case '\n': // This may be introducing a bug
             return true;
         default:
             return false;
@@ -62,82 +100,83 @@ bool Lexer::isOperator(char c) {
     }
 }
 
-void Lexer::flushTok(std::vector<Token> &lexes, std::string &tok, FilePosition &pos) {
-    if (tok.length() > 0) {
-        lexes.push_back(
-            Token(categorize(tok), 
-            tok, 
-            FilePosition(pos.getLine(), pos.getCol() - tok.length()))
+void Lexer::flushTok() {
+    if (state.tokBuf.length() > 0) {
+        state.tokens.push_back(
+            Token(categorize(state.tokBuf), 
+            state.tokBuf, 
+            FilePosition(state.currPos.getLine(), state.currPos.getCol() - state.tokBuf.length()))
         );
-        tok = "";
+        state.tokBuf = "";
     }
 }
 
-void Lexer::handleSingleCharTok(char &c, std::string &tok, std::vector<Token> &lexes, FilePosition &pos){
+void Lexer::handleSingleCharTok(){
 
-    flushTok(lexes, tok, pos); // Flush curr tok buff if not empty
-    tok.push_back(c); // Add and flush new separator tok
-    flushTok(lexes, tok, pos);
+    flushTok(); // Flush curr tok buff if not empty
+    state.tokBuf.push_back(state.c); // Add and flush new separator tok
+    flushTok();
 };
 
-void Lexer::handleCharLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos) {
-    if (tok.length() > 0) { // Temporary
+void Lexer::handleCharLiteral() {
+    if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleCharLiteral: Token buffer should be empty" << std::endl; 
         exit(1);
     }
 
-    tok = "";
-    char ch = f.get();
-    tok.push_back(ch);
+    state.tokBuf = "";
+    // char ch = s.file.get();
+    char ch = state.file.get();
+    state.tokBuf.push_back(ch);
 
-    while ((ch = f.get())) {
-        tok.push_back(ch);
+    while ((ch = state.file.get())) {
+        state.tokBuf.push_back(ch);
         if (ch == '\'') break;
         if (ch == EOF) {
             std::cout << "Error unmatched single quote in char literal" << std::endl;
             exit(2);
         }
     }
-    flushTok(lexes, tok, pos);
-    f.seekg(-1, std::fstream::cur);
+    flushTok();
+    state.file.seekg(-1, std::fstream::cur);
 }
 
-void Lexer::handleStringLiteral(std::ifstream &f, std::string &tok, std::vector<Token> &lexes, FilePosition &pos) {
-    if (tok.length() > 0) { // Temporary
+void Lexer::handleStringLiteral() {
+    if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleStringLiteral: Token buffer should be empty: Previous token is incorrect." << std::endl; 
         exit(1);
     }
 
-    tok = "";
-    char ch = f.get();
-    tok.push_back(ch);
+    state.tokBuf = "";
+    char ch = state.file.get();
+    state.tokBuf.push_back(ch);
 
-    while ((ch = f.get())) {
-        tok.push_back(ch);
-        pos++;
+    while ((ch = state.file.get())) {
+        state.tokBuf.push_back(ch);
+        state.currPos++;
         if (ch == '\"') break;
         if (ch == EOF) {
             std::cout << "Error unmatched double quote in string literal" << std::endl;
             exit(2);
         }
     }
-    flushTok(lexes, tok, pos);
-    f.seekg(-1, std::fstream::cur);
+    flushTok();
+    state.file.seekg(-1, std::fstream::cur);
 };
     
-void Lexer::handleOperator(std::ifstream &f, std::string &tok, std::vector<Token> &toks, char &ch, FilePosition &pos) {
-    flushTok(toks, tok, pos);
-    tok.push_back(ch);
-    f.seekg(1, std::fstream::cur);
-    ch = f.peek();
+void Lexer::handleOperator() {
+    flushTok();
+    state.tokBuf.push_back(state.c);
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
 
-    if (isOperator(ch)) { // Double Operator Token
-        tok.push_back(ch);
-        flushTok(toks, tok, pos);
+    if (isOperator(state.c)) { // Double Operator Token
+        state.tokBuf.push_back(state.c);
+        flushTok();
     }
     else { // Single Operator Token
-        flushTok(toks, tok, pos);
-        f.seekg(-1, std::fstream::cur);
+        flushTok();
+        state.file.seekg(-1, std::fstream::cur);
     }
 }
 
@@ -167,10 +206,11 @@ bool Lexer::isTokKeyword(std::string tok) {
     return false;
 }
 bool Lexer::isTokIdentifier(std::string tok) {
-    if (isNum(tok.at(0)) || 
-        isTokKeyword(tok) || 
+    if (tok.length() == 0 ||
+        isNum(tok.at(0))  || 
         tok.at(0) == '\'' || // Is CHAR_TOK
-        tok.at(0) == '\"'   // Is STRING_TOK
+        tok.at(0) == '\"' || // Is STRING_TOK
+        isTokKeyword(tok)
     ) return false;
 
     for (int i = 0; i < tok.length(); i++) {
@@ -247,63 +287,64 @@ TokenType Lexer::categorize(std::string tok) {
     return INVALID_TOK;
 }
 
+/**
+ * Returns 'shouldStopLoop' boolean
+ */
+bool Lexer::loopLogic() {
+    // Next char
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
+    state.currPos++;
 
+    if (state.c != EOF) {
+        if (state.c == '\n') {
+            flushTok();
+            state.currPos.newLine();
+        }
+        return false;
+
+    } else { // EOF: Flush last token
+        flushTok();
+        return true;
+    }
+}
 
 std::vector<Token> Lexer::tokenize(std::string filename) {
+    // if (!state.valid) {
+    //     std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state. \
+    //     Make sure you have passed a filename to tokenize()." << std::endl;
+    // }
+    state = LexState(filename);
 
-    std::ifstream f(filename);
-    if (!f.is_open()) {
-        std::cout << "Error opening file" << std::endl;
-        exit(1);
-    }
-    std::string tok;
-    char c;
-    std::vector<std::string> toks;
-    std::vector<Token> tokens;
-    FilePosition curPos = FilePosition();
+    state.c = state.file.peek();
+    
+    bool stop = false;
 
+    while (!stop /* && s.c */) {
+        
+        if (state.c == '\'') {
+            handleCharLiteral();
 
+        } else if (state.c == '\"') {
+            handleStringLiteral();
 
-    c = f.peek();
-    while (c) {
-        if (c == '\'') {
-            handleCharLiteral(f, tok, tokens, curPos);
+        } else if (isOperator(state.c)) {
+            handleOperator();
 
-        } else if (c == '\"') {
-            handleStringLiteral(f, tok, tokens, curPos);
+        } else if (isSeparator(state.c) || state.c == ';') {
+            handleSingleCharTok();
 
-        } else if (isOperator(c)) {
-            handleOperator(f, tok, tokens, c, curPos);
-
-        } else if (isSeparator(c) || c == ';') {
-            handleSingleCharTok(c, tok, tokens, curPos);
-
-        } else if(!isWhitespace(c)) {  // general case
-            tok.push_back(c);
+        } else if(!isWhitespace(state.c)) {  // general case
+            state.tokBuf.push_back(state.c);
 
         } else { // Flush tok in whitespace
-            flushTok(tokens, tok, curPos);
+            flushTok();
         }
 
-
-        // Next char
-        f.seekg(1, std::fstream::cur);
-        c = f.peek();
-        curPos++;
-
-        if (c != EOF) {
-            if (c == '\n') {
-                flushTok(tokens, tok, curPos);
-                curPos.newLine();
-            }
-
-        } else { // EOF: Flush last token
-            flushTok(tokens, tok, curPos);
-            break;
-        }
+        // Loop logic
+        stop = loopLogic();
     }
-
-    f.close();
+    state.file.close();
     
-    return tokens;
+    return state.tokens;
 }
