@@ -7,5 +7,16 @@ Currently is in an early stage, but eventually it will become a playground for l
 - Implement special characters within string literals (\", \', \\)
 - Implement hex, oct, and binary numerals
 
+#### Lex refactor
+- Change tok helper functions parameter name from tok to lexeme
+- Handle: "case '\n': // This may be introducing a bug" in Lexer.cpp
+- Lexer constructor 
+- Tester constructor
+- Check for valid state before making operations in state dependent functions
+- MAYBE: Make overloaded version of tokenize (with string parameter) state-independent
+- Right now lexer is disposable
+
+
+
 ### BUGs:
 - Token position

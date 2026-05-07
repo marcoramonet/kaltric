@@ -13,5 +13,10 @@ out:
 	./$(BIN)
 	rm $(BIN)
 
+scrap:
+	$(CXX) scrap.cpp FilePosition.cpp Lexer.cpp Token.cpp -o scrap $(CXXFLAGS)
+	./scrap
+	rm scrap
+
 clean: 
 	rm $(BIN)

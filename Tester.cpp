@@ -110,7 +110,7 @@ void Tester::setup(u_int8_t fl) {
     Tester::setup();
 }
 
-void Tester::setSelectedUnits(std::vector<int> units) {
+void Tester::selectUnits(std::vector<int> units) {
     selectedIndices = units;
 }
 
@@ -144,6 +144,7 @@ void Tester::run() {
 
         std::cout << "\033[1;32mTest \033[0m" << i << "\033[1;32m:\033[0m" << std::endl;
         
+        Lexer lexer = Lexer(tUnits.at(currUnitIdx).filename);
         outToks = lexer.tokenize(tUnits.at(currUnitIdx).filename);
 
         if (outToks.size() != tUnits.at(currUnitIdx).toks.size()) {

@@ -5,12 +5,16 @@
 #include <vector>
 #include "Token.hpp"
 #include "Lexer.hpp"
+
 #define TEST_VERBOSE 0b00000001
 
+#define TEST0 0
+#define TEST1 1
+
 enum ErrorType {
-TOK_TYPE,
-TOK_VAL, 
-TOK_POS
+    TOK_TYPE,
+    TOK_VAL, 
+    TOK_POS
 };
 
 
@@ -31,7 +35,7 @@ class Tester {
     u_int8_t flags = 0b00000000;
     std::vector<int> selectedIndices = {};
 
-    Lexer lexer = Lexer();
+    // Lexer lexer = Lexer();
     std::vector<Token> outToks;
 
 
@@ -40,10 +44,9 @@ class Tester {
     public:
     void setup();
     void setup(u_int8_t fl);
-    void setSelectedUnits(std::vector<int> units);
+    void selectUnits(std::vector<int> units);
     std::vector<int> getSelectedIdxs() {return selectedIndices;}
     std::vector<TestUnit> getTUnits() {return tUnits;}
-    // std::string testPath(std::string relPath);
     void run();
 };
 

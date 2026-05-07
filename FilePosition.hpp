@@ -18,6 +18,7 @@ class FilePosition {
     void setLine(unsigned int l);
     void setCol(unsigned int pos);
     unsigned int operator++(int);
+    // unsigned int FilePosition::operator!(); // Plan: add a new line, like: currPos! or !currPos
     void newLine();
     std::string toString();
     bool operator==(FilePosition rhs);
