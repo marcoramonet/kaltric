@@ -294,6 +294,7 @@ bool Lexer::loopLogic() {
     // Next char
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
+    // state.c = state.file.get();
     state.currPos++;
 
     if (state.c != EOF) {
@@ -317,10 +318,12 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
     state = LexState(filename);
 
     state.c = state.file.peek();
+    // state.c = state.file.get();
+    // state.currPos++;
     
     bool stop = false;
 
-    while (!stop /* && s.c */) {
+    while (!stop) {
         
         if (state.c == '\'') {
             handleCharLiteral();

@@ -10,8 +10,7 @@ BIN = out
 
 out: 
 	$(CXX) $(SRC) -o $(BIN)  $(CXXFLAGS)
-	./$(BIN)
-	rm $(BIN)
+	./$(BIN); rm $(BIN);
 
 scrap:
 	$(CXX) scrap.cpp FilePosition.cpp Lexer.cpp Token.cpp -o scrap $(CXXFLAGS)

@@ -142,7 +142,7 @@ void Tester::run() {
     for (int i = 0; i < selectedIndices.size(); i++) {
         int currUnitIdx = selectedIndices.at(i);
 
-        std::cout << "\033[1;32mTest \033[0m" << i << "\033[1;32m:\033[0m" << std::endl;
+        std::cout << "\033[1;32mTest " << i << ":\033[0m" << std::endl;
         
         Lexer lexer = Lexer(tUnits.at(currUnitIdx).filename);
         outToks = lexer.tokenize(tUnits.at(currUnitIdx).filename);

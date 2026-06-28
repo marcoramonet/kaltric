@@ -80,7 +80,7 @@ class Lexer {
       * Main interface.
       */
     TokenType categorize(std::string tok); // State independent
-    std::vector<Token> tokenize(); // State dependent
+    // std::vector<Token> tokenize(); // State dependent
     std::vector<Token> tokenize(std::string filename); // State dependent
 };
                                             

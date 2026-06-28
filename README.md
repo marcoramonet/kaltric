@@ -1,6 +1,6 @@
 # Kaltric
 Kaltric is a programming language as a study on compiler design and construction. 
-Currently is in an early stage, but eventually it will become a playground for lexical and syntactical exploration.
+Currently it is in an early stage, but eventually it will become a playground for lexical and syntactical exploration.
 
 ## TODOs: 
 ### Lexer:
@@ -10,8 +10,6 @@ Currently is in an early stage, but eventually it will become a playground for l
 #### Lex refactor
 - Change tok helper functions parameter name from tok to lexeme
 - Handle: "case '\n': // This may be introducing a bug" in Lexer.cpp
-- Lexer constructor 
-- Tester constructor
 - Check for valid state before making operations in state dependent functions
 - MAYBE: Make overloaded version of tokenize (with string parameter) state-independent
 - Right now lexer is disposable
@@ -20,3 +18,4 @@ Currently is in an early stage, but eventually it will become a playground for l
 
 ### BUGs:
 - Token position
+- Use get() instead of peek() and seekg()
