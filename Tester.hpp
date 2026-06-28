@@ -10,6 +10,7 @@
 
 #define TEST0 0
 #define TEST1 1
+#define TEST2 2
 
 enum ErrorType {
     TOK_TYPE,
@@ -43,7 +44,7 @@ class Tester {
 
     public:
     void setup();
-    void setup(u_int8_t fl);
+    void setup(u_int8_t inputFlags);
     void selectUnits(std::vector<int> units);
     std::vector<int> getSelectedIdxs() {return selectedIndices;}
     std::vector<TestUnit> getTUnits() {return tUnits;}

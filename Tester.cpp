@@ -11,7 +11,7 @@
 void Tester::setup(){
     Tester::tUnits.push_back(
         TestUnit(
-            "testFiles/test1.kal",
+            "testFiles/test0.kal",
             std::vector<Token>({
                 Token(KEYWORD_TOK,   "int", {1,1}),
                 Token(IDENTIFIER_TOK, "x", {1,5}),
@@ -27,7 +27,7 @@ void Tester::setup(){
     );
     Tester::tUnits.push_back(
         TestUnit(
-            "testFiles/test2.kal",
+            "testFiles/test1.kal",
             std::vector<Token>({
                 Token(KEYWORD_TOK,  "int", {1,1}),
                 Token(IDENTIFIER_TOK, "x", {1,5}),
@@ -103,10 +103,44 @@ void Tester::setup(){
             )
         )
     );
+    Tester::tUnits.push_back(
+        TestUnit(
+            "testFiles/test2.kal",
+            std::vector<Token>({
+                Token(IDENTIFIER_TOK, "int",        {1, 1}),
+                Token(IDENTIFIER_TOK, "if",         {1, 5}),
+                Token(IDENTIFIER_TOK, "identif",    {1, 8}),
+                Token(IDENTIFIER_TOK, "char",       {1, 16}),
+                Token(IDENTIFIER_TOK, "yes",        {1, 21}),
+                Token(IDENTIFIER_TOK, "no",         {1, 25}),
+                Token(IDENTIFIER_TOK, "maybe",      {1, 28}),
+                Token(IDENTIFIER_TOK, "i",          {1, 34}),
+
+                Token(IDENTIFIER_TOK, "dont",       {2, 1}),
+                Token(IDENTIFIER_TOK, "know",       {2, 6}),
+                Token(IDENTIFIER_TOK, "could",      {2, 11}),
+                Token(IDENTIFIER_TOK, "you",        {2, 17}),
+                Token(IDENTIFIER_TOK, "repeat",     {2, 21}),
+                Token(IDENTIFIER_TOK, "the",        {2, 28}),
+                
+                // '\n'
+                
+                Token(IDENTIFIER_TOK, "question",   {4, 1}),
+                Token(IDENTIFIER_TOK, "youre",      {4, 10}),
+                Token(IDENTIFIER_TOK, "not",        {4, 16}),
+                Token(IDENTIFIER_TOK, "the",        {4, 20}),
+                Token(IDENTIFIER_TOK, "boss",       {4, 24}),
+                Token(IDENTIFIER_TOK, "of",         {4, 29}),
+                Token(IDENTIFIER_TOK, "me",         {4, 32}),
+                Token(IDENTIFIER_TOK, "now",        {4, 35}),
+                }
+            )
+        )
+    );
 }
 
-void Tester::setup(u_int8_t fl) {
-    Tester::flags = fl;
+void Tester::setup(u_int8_t inputFlags) {
+    Tester::flags = inputFlags;
     Tester::setup();
 }
 
@@ -142,7 +176,7 @@ void Tester::run() {
     for (int i = 0; i < selectedIndices.size(); i++) {
         int currUnitIdx = selectedIndices.at(i);
 
-        std::cout << "\033[1;32mTest " << i << ":\033[0m" << std::endl;
+        std::cout << "\033[1;32mTest " << currUnitIdx << ":\033[0m" << std::endl;
         
         Lexer lexer = Lexer(tUnits.at(currUnitIdx).filename);
         outToks = lexer.tokenize(tUnits.at(currUnitIdx).filename);
@@ -155,15 +189,15 @@ void Tester::run() {
 
         for (int j = 0; j < outToks.size(); j++) {
             if (tUnits.at(currUnitIdx).toks.at(j).getType() != outToks.at(j).getType()) {
-                printError(i, j, TOK_TYPE);
+                printError(currUnitIdx, j, TOK_TYPE);
                 std::cout << std::endl;
                 
             } else if (tUnits.at(currUnitIdx).toks.at(j).getToken() != outToks.at(j).getToken()) {
-                printError(i, j, TOK_VAL);
+                printError(currUnitIdx, j, TOK_VAL);
                 std::cout << std::endl;
                 
             } else if (tUnits.at(currUnitIdx).toks.at(j).getPos() != outToks.at(j).getPos()) {
-                printError(i, j, TOK_POS);
+                printError(currUnitIdx, j, TOK_POS);
                 std::cout << std::endl;
                 
             }    
@@ -171,9 +205,9 @@ void Tester::run() {
 
         if (flags & TEST_VERBOSE) {
             std::cout << outToks.size() << " tokens (verbose):" << std::endl;
-            std::cout << "Test unit " << i << "\t" << tUnits.at(currUnitIdx).filename << " tokenized" << std::endl;
+            std::cout << "Test unit " << currUnitIdx << "\t\t\t\t\t" << tUnits.at(currUnitIdx).filename << " tokenized" << std::endl;
             for (int j = 0; j < outToks.size(); j++) {
-                std::cout << tUnits.at(currUnitIdx).toks.at(j).toString() << "\t" << outToks.at(j).toString() << std::endl;
+                std::cout << tUnits.at(currUnitIdx).toks.at(j).toString() << "\t\t\t" << outToks.at(j).toString() << std::endl;
             }
         }
         std::cout << std::endl;

@@ -1,1 +1,12 @@
 int x = (5 + 5);
+int y=561324;
+y++;
+double z=3456.3456;
+if(x==y&&z!=x){
+    {
+        x=(y+z);
+    }
+}else{
+    char a = 't';
+    string s = "aoisu dhg jnv";
+}
