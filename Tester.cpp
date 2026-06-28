@@ -107,10 +107,10 @@ void Tester::setup(){
         TestUnit(
             "testFiles/test2.kal",
             std::vector<Token>({
-                Token(IDENTIFIER_TOK, "int",        {1, 1}),
-                Token(IDENTIFIER_TOK, "if",         {1, 5}),
+                Token(KEYWORD_TOK, "int",        {1, 1}),
+                Token(KEYWORD_TOK, "if",         {1, 5}),
                 Token(IDENTIFIER_TOK, "identif",    {1, 8}),
-                Token(IDENTIFIER_TOK, "char",       {1, 16}),
+                Token(KEYWORD_TOK, "char",       {1, 16}),
                 Token(IDENTIFIER_TOK, "yes",        {1, 21}),
                 Token(IDENTIFIER_TOK, "no",         {1, 25}),
                 Token(IDENTIFIER_TOK, "maybe",      {1, 28}),

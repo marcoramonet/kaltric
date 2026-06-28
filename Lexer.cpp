@@ -12,13 +12,13 @@ LexState::LexState(std::string filePath) : file(filePath) {
     if (!file.is_open()) {
         std::cout << "Error opening file" << std::endl;
         valid = false;
+    } else {
+        tokBuf = "";
+        c = EOF;
+        tokens = {};
+        currPos = FilePosition();
+        valid = true; 
     }
-    // file = f;
-    tokBuf = "";
-    c = EOF;
-    tokens = {};
-    currPos = FilePosition();
-    valid = true;
 }
 
 std::string LexState::toString() {
@@ -294,13 +294,16 @@ bool Lexer::loopLogic() {
     // Next char
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
-    // state.c = state.file.get();
+
     state.currPos++;
 
     if (state.c != EOF) {
         if (state.c == '\n') {
             flushTok();
             state.currPos.newLine();
+
+            state.file.seekg(1, std::fstream::cur);
+            state.c = state.file.peek();
         }
         return false;
 
@@ -311,15 +314,15 @@ bool Lexer::loopLogic() {
 }
 
 std::vector<Token> Lexer::tokenize(std::string filename) {
-    // if (!state.valid) {
-    //     std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state. \
-    //     Make sure you have passed a filename to tokenize()." << std::endl;
-    // }
+    
     state = LexState(filename);
 
+    if (!state.valid) {
+        std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state." << std::endl;
+        return {}; 
+    }
+
     state.c = state.file.peek();
-    // state.c = state.file.get();
-    // state.currPos++;
     
     bool stop = false;
 
@@ -344,7 +347,6 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
             flushTok();
         }
 
-        // Loop logic
         stop = loopLogic();
     }
     state.file.close();

@@ -17,5 +17,8 @@ Currently it is in an early stage, but eventually it will become a playground fo
 
 
 ### BUGs:
-- Token position
+- Token position:
+    - Bug in newline: newline and incrementing are out of phase
+    - Implement consume() function.
+
 - Use get() instead of peek() and seekg()
