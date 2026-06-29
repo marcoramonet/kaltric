@@ -125,14 +125,14 @@ void Tester::setup(){
                 
                 // '\n'
                 
-                Token(IDENTIFIER_TOK, "question",   {4, 1}),
-                Token(IDENTIFIER_TOK, "youre",      {4, 10}),
-                Token(IDENTIFIER_TOK, "not",        {4, 16}),
-                Token(IDENTIFIER_TOK, "the",        {4, 20}),
-                Token(IDENTIFIER_TOK, "boss",       {4, 24}),
-                Token(IDENTIFIER_TOK, "of",         {4, 29}),
-                Token(IDENTIFIER_TOK, "me",         {4, 32}),
-                Token(IDENTIFIER_TOK, "now",        {4, 35}),
+                Token(IDENTIFIER_TOK, "question",   {8, 1}),
+                Token(IDENTIFIER_TOK, "youre",      {8, 10}),
+                Token(IDENTIFIER_TOK, "not",        {8, 16}),
+                Token(IDENTIFIER_TOK, "the",        {8, 20}),
+                Token(IDENTIFIER_TOK, "boss",       {8, 24}),
+                Token(IDENTIFIER_TOK, "of",         {8, 29}),
+                Token(IDENTIFIER_TOK, "me",         {8, 32}),
+                Token(IDENTIFIER_TOK, "now",        {8, 35}),
                 }
             )
         )

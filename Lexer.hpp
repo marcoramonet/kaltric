@@ -51,7 +51,10 @@ class Lexer {
     void handleCharLiteral();
     void handleStringLiteral();
     void handleOperator();
-    bool loopLogic();
+    void handleNewline();
+    void handleWhiteSpace();
+    bool checkNHandleEOF();
+    void consume();
     
     public:
     Lexer() : state() {}

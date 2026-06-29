@@ -53,7 +53,7 @@ bool Lexer::isWhitespace(char c) {
     switch (c) {
         case ' ':
         case '\t':
-        case '\n': // This may be introducing a bug
+        case '\n':
             return true;
         default:
             return false;
@@ -98,6 +98,12 @@ bool Lexer::isOperator(char c) {
         default:
         return false;
     }
+}
+
+void Lexer::consume() {
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
+    state.currPos++;
 }
 
 void Lexer::flushTok() {
@@ -178,6 +184,18 @@ void Lexer::handleOperator() {
         flushTok();
         state.file.seekg(-1, std::fstream::cur);
     }
+}
+
+void Lexer::handleNewline() {
+    flushTok();
+    state.currPos.newLine();
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
+}
+
+void Lexer::handleWhiteSpace() {
+    if (state.c == '\n') handleNewline();
+    else flushTok();
 }
 
 bool Lexer::isTokInteger(std::string tok) {
@@ -287,29 +305,12 @@ TokenType Lexer::categorize(std::string tok) {
     return INVALID_TOK;
 }
 
-/**
- * Returns 'shouldStopLoop' boolean
- */
-bool Lexer::loopLogic() {
-    // Next char
-    state.file.seekg(1, std::fstream::cur);
-    state.c = state.file.peek();
-
-    state.currPos++;
-
-    if (state.c != EOF) {
-        if (state.c == '\n') {
-            flushTok();
-            state.currPos.newLine();
-
-            state.file.seekg(1, std::fstream::cur);
-            state.c = state.file.peek();
-        }
-        return false;
-
-    } else { // EOF: Flush last token
-        flushTok();
+bool Lexer::checkNHandleEOF() {
+    if (!state.file.eof()) 
         return true;
+    else {
+        flushTok();
+        return false;
     }
 }
 
@@ -318,37 +319,39 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
     state = LexState(filename);
 
     if (!state.valid) {
-        std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state." << std::endl;
+        std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state. Check file validity." << std::endl;
         return {}; 
     }
 
     state.c = state.file.peek();
-    
-    bool stop = false;
 
-    while (!stop) {
+    while (checkNHandleEOF()) {
         
         if (state.c == '\'') {
             handleCharLiteral();
-
+            
         } else if (state.c == '\"') {
             handleStringLiteral();
-
+            
         } else if (isOperator(state.c)) {
             handleOperator();
-
+            
         } else if (isSeparator(state.c) || state.c == ';') {
             handleSingleCharTok();
-
-        } else if(!isWhitespace(state.c)) {  // general case
+            
+        } else if(isAlpha(state.c)) {  // general case: identifier
             state.tokBuf.push_back(state.c);
-
-        } else { // Flush tok in whitespace
-            flushTok();
+            
+        } else if (isWhitespace(state.c)) {
+            handleWhiteSpace();
+            
+        } else {
+            std::cerr << "\033[1;31mError\033[0m Character " << state.c << " not supported." << std::endl;
         }
-
-        stop = loopLogic();
+        
+        consume();
     }
+    
     state.file.close();
     
     return state.tokens;
