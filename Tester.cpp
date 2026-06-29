@@ -25,6 +25,7 @@ void Tester::setup(){
             )
         )
     );
+    
     Tester::tUnits.push_back(
         TestUnit(
             "testFiles/test1.kal",
@@ -103,6 +104,7 @@ void Tester::setup(){
             )
         )
     );
+
     Tester::tUnits.push_back(
         TestUnit(
             "testFiles/test2.kal",
@@ -136,6 +138,35 @@ void Tester::setup(){
                 }
             )
         )
+    );
+
+    Tester::tUnits.push_back(
+        TestUnit("testFiles/test3.kal", 
+            std::vector<Token>({
+                Token(OPERATOR_TOK, "+", {1,2}),
+                Token(OPERATOR_TOK, "-", {1,4}),
+                Token(OPERATOR_TOK, "*", {1,6}),
+                Token(OPERATOR_TOK, "/", {1,8}),
+                Token(OPERATOR_TOK, "/", {1,10}),
+                Token(OPERATOR_TOK, "*", {1,12}),
+                Token(OPERATOR_TOK, "-", {1,14}),
+                Token(OPERATOR_TOK, "+", {1,16})
+            }))
+    );
+
+    Tester::tUnits.push_back(
+        TestUnit("testFiles/test4.kal", 
+            std::vector<Token>({
+                Token(SEPARATOR_TOK, "(", {1,2}),
+                Token(SEPARATOR_TOK, "{", {1,5}),
+                Token(SEPARATOR_TOK, "[", {1,8}),
+                Token(SEPARATOR_TOK, ",", {1,10}),
+                Token(SEPARATOR_TOK, ",", {1,12}),
+                Token(SEPARATOR_TOK, ",", {1,15}),
+                Token(SEPARATOR_TOK, "]", {1,17}),
+                Token(SEPARATOR_TOK, "}", {1,18}),
+                Token(SEPARATOR_TOK, ")", {1,19}),
+            }))
     );
 }
 
