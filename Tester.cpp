@@ -25,7 +25,6 @@ void Tester::setup(){
             )
         )
     );
-
     Tester::tUnits.push_back(
         TestUnit(
             "testFiles/test1.kal",
