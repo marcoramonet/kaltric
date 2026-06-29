@@ -28,7 +28,7 @@ unsigned int FilePosition::operator++(int) {
     return this->col;
 }
 void FilePosition::newLine() {
-    col = 1;
+    col = 0;
     line++;
 }
 std::string FilePosition::toString() {

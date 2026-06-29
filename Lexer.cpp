@@ -1,6 +1,8 @@
 #include "Lexer.hpp"
 #include "utils.hpp"
 
+
+/*------------------------------------------LEX STATE------------------------------------------*/
 LexState::LexState() {
     tokBuf = "";
     c = EOF;
@@ -20,7 +22,6 @@ LexState::LexState(std::string filePath) : file(filePath) {
         valid = true; 
     }
 }
-
 std::string LexState::toString() {
     std::stringstream ss;
     ss << valid << "\n" << 
@@ -37,18 +38,17 @@ std::string LexState::toString() {
 
     return ss.str();
 }
-
 bool Lexer::isNum(char c) {
     if (c >= ASCII_NUM_FIRST && c <= ASCII_NUM_LAST) return true;
     return false;
 }
 
+/*------------------------------------------LEXER------------------------------------------*/
 bool Lexer::isAlpha(char c) {
     if ((c >= ASCII_ALPHA_UPPERCASE_FIRST && c <= ASCII_ALPHA_UPPERCASE_LAST) ||
         (c >= ASCII_ALPHA_LOWERCASE_FIRST && c <= ASCII_ALPHA_LOWERCASE_LAST)) return true;
     return false;
 }
-
 bool Lexer::isWhitespace(char c) {
     switch (c) {
         case ' ':
@@ -59,7 +59,6 @@ bool Lexer::isWhitespace(char c) {
             return false;
     }
 }
-
 bool Lexer::isSeparator(char c) {
     switch (c) {
         case '(':
@@ -78,7 +77,6 @@ bool Lexer::isSeparator(char c) {
 
     return false;
 }
-
 bool Lexer::isOperator(char c) {
     switch (c) {
         case '+':
@@ -99,7 +97,6 @@ bool Lexer::isOperator(char c) {
         return false;
     }
 }
-
 void Lexer::consume() {
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
@@ -116,14 +113,12 @@ void Lexer::flushTok() {
         state.tokBuf = "";
     }
 }
-
 void Lexer::handleSingleCharTok(){
 
     flushTok(); // Flush curr tok buff if not empty
     state.tokBuf.push_back(state.c); // Add and flush new separator tok
     flushTok();
 };
-
 void Lexer::handleCharLiteral() {
     if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleCharLiteral: Token buffer should be empty" << std::endl; 
@@ -146,7 +141,6 @@ void Lexer::handleCharLiteral() {
     flushTok();
     state.file.seekg(-1, std::fstream::cur);
 }
-
 void Lexer::handleStringLiteral() {
     if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleStringLiteral: Token buffer should be empty: Previous token is incorrect." << std::endl; 
@@ -168,8 +162,7 @@ void Lexer::handleStringLiteral() {
     }
     flushTok();
     state.file.seekg(-1, std::fstream::cur);
-};
-    
+}; 
 void Lexer::handleOperator() {
     flushTok();
     state.tokBuf.push_back(state.c);
@@ -185,19 +178,10 @@ void Lexer::handleOperator() {
         state.file.seekg(-1, std::fstream::cur);
     }
 }
-
-void Lexer::handleNewline() {
-    flushTok();
-    state.currPos.newLine();
-    state.file.seekg(1, std::fstream::cur);
-    state.c = state.file.peek();
-}
-
 void Lexer::handleWhiteSpace() {
-    if (state.c == '\n') handleNewline();
-    else flushTok();
+    flushTok();
+    if (state.c == '\n') state.currPos.newLine();
 }
-
 bool Lexer::isTokInteger(std::string tok) {
     for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i))) return false;
@@ -285,8 +269,6 @@ bool Lexer::isTokDoubleOperator(std::string tok) {
     ) return false;
     return true;
 }
-
-
 TokenType Lexer::categorize(std::string tok) {
     
     // Order is imperative
@@ -304,7 +286,6 @@ TokenType Lexer::categorize(std::string tok) {
     std::cout << "Invalid token: " << tok << std::endl;
     return INVALID_TOK;
 }
-
 bool Lexer::checkNHandleEOF() {
     if (!state.file.eof()) 
         return true;
@@ -313,7 +294,6 @@ bool Lexer::checkNHandleEOF() {
         return false;
     }
 }
-
 std::vector<Token> Lexer::tokenize(std::string filename) {
     
     state = LexState(filename);
@@ -351,7 +331,7 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
         
         consume();
     }
-    
+
     state.file.close();
     
     return state.tokens;

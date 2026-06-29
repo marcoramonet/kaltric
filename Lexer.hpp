@@ -51,7 +51,6 @@ class Lexer {
     void handleCharLiteral();
     void handleStringLiteral();
     void handleOperator();
-    void handleNewline();
     void handleWhiteSpace();
     bool checkNHandleEOF();
     void consume();
