@@ -137,6 +137,21 @@ void Tester::setup(){
             )
         )
     );
+    Tester::tUnits.push_back(
+        TestUnit(
+            "testFiles/test3.kal",
+            std::vector<Token>({
+                Token(OPERATOR_TOK, "+", {1, 2}),
+                Token(OPERATOR_TOK, "-", {1, 4}),
+                Token(OPERATOR_TOK, "*", {1, 6}),
+                Token(OPERATOR_TOK, "/", {1, 8}),
+                Token(OPERATOR_TOK, "/", {1, 10}),
+                Token(OPERATOR_TOK, "*", {1, 12}),
+                Token(OPERATOR_TOK, "-", {1, 14}),
+                Token(OPERATOR_TOK, "+", {1, 16})
+            })
+        )
+    );
 }
 
 void Tester::setup(u_int8_t inputFlags) {

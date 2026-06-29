@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     
     Tester t;
     t.setup(TEST_VERBOSE);
-    t.selectUnits({TEST0});
+    t.selectUnits({TEST3});
     t.run();
     
     return 0;

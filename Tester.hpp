@@ -11,6 +11,7 @@
 #define TEST0 0
 #define TEST1 1
 #define TEST2 2
+#define TEST3 3
 
 enum ErrorType {
     TOK_TYPE,

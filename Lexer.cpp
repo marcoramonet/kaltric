@@ -38,12 +38,12 @@ std::string LexState::toString() {
 
     return ss.str();
 }
+
+/*------------------------------------------LEXER------------------------------------------*/
 bool Lexer::isNum(char c) {
     if (c >= ASCII_NUM_FIRST && c <= ASCII_NUM_LAST) return true;
     return false;
 }
-
-/*------------------------------------------LEXER------------------------------------------*/
 bool Lexer::isAlpha(char c) {
     if ((c >= ASCII_ALPHA_UPPERCASE_FIRST && c <= ASCII_ALPHA_UPPERCASE_LAST) ||
         (c >= ASCII_ALPHA_LOWERCASE_FIRST && c <= ASCII_ALPHA_LOWERCASE_LAST)) return true;
@@ -97,12 +97,12 @@ bool Lexer::isOperator(char c) {
         return false;
     }
 }
+
 void Lexer::consume() {
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
     state.currPos++;
 }
-
 void Lexer::flushTok() {
     if (state.tokBuf.length() > 0) {
         state.tokens.push_back(
@@ -163,20 +163,26 @@ void Lexer::handleStringLiteral() {
     flushTok();
     state.file.seekg(-1, std::fstream::cur);
 }; 
+// void Lexer::handleOperator() { // Old implementation
+//     flushTok();
+//     state.currPos++;
+
+//     state.tokBuf.push_back(state.c);
+//     state.file.seekg(1, std::fstream::cur);
+//     state.c = state.file.peek();
+
+//     if (isOperator(state.c)) { // Double Operator Token
+//         state.tokBuf.push_back(state.c);
+//         flushTok();
+//     }
+//     else { // Single Operator Token
+//         flushTok();
+//         state.file.seekg(-1, std::fstream::cur);
+//     }
+// }
 void Lexer::handleOperator() {
     flushTok();
     state.tokBuf.push_back(state.c);
-    state.file.seekg(1, std::fstream::cur);
-    state.c = state.file.peek();
-
-    if (isOperator(state.c)) { // Double Operator Token
-        state.tokBuf.push_back(state.c);
-        flushTok();
-    }
-    else { // Single Operator Token
-        flushTok();
-        state.file.seekg(-1, std::fstream::cur);
-    }
 }
 void Lexer::handleWhiteSpace() {
     flushTok();
@@ -319,7 +325,7 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
         } else if (isSeparator(state.c) || state.c == ';') {
             handleSingleCharTok();
             
-        } else if(isAlpha(state.c)) {  // general case: identifier
+        } else if(isAlpha(state.c) || isNum(state.c)) {  // general case: identifier
             state.tokBuf.push_back(state.c);
             
         } else if (isWhitespace(state.c)) {
@@ -329,6 +335,8 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
             std::cerr << "\033[1;31mError\033[0m Character " << state.c << " not supported." << std::endl;
         }
         
+        // std::cout << state.toString() << std::endl;
+
         consume();
     }
 
