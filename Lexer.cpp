@@ -115,8 +115,8 @@ void Lexer::flushTok() {
 }
 void Lexer::handleSingleCharTok(){
 
-    flushTok(); // Flush curr tok buff if not empty
-    state.tokBuf.push_back(state.c); // Add and flush new separator tok
+    flushTok();
+    state.tokBuf.push_back(state.c);
     flushTok();
 };
 void Lexer::handleCharLiteral() {
@@ -163,23 +163,21 @@ void Lexer::handleStringLiteral() {
     flushTok();
     state.file.seekg(-1, std::fstream::cur);
 }; 
-// void Lexer::handleOperator() { // Old implementation
-//     flushTok();
-//     state.currPos++;
+/* void Lexer::handleOperator() {
+    flushTok();
+    state.tokBuf.push_back(state.c);
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
 
-//     state.tokBuf.push_back(state.c);
-//     state.file.seekg(1, std::fstream::cur);
-//     state.c = state.file.peek();
-
-//     if (isOperator(state.c)) { // Double Operator Token
-//         state.tokBuf.push_back(state.c);
-//         flushTok();
-//     }
-//     else { // Single Operator Token
-//         flushTok();
-//         state.file.seekg(-1, std::fstream::cur);
-//     }
-// }
+    if (isOperator(state.c)) { // Double Operator Token
+        state.tokBuf.push_back(state.c);
+        flushTok();
+    }
+    else { // Single Operator Token
+        flushTok();
+        state.file.seekg(-1, std::fstream::cur);
+    }
+} */
 void Lexer::handleOperator() {
     flushTok();
     state.tokBuf.push_back(state.c);
