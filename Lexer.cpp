@@ -199,7 +199,7 @@ void Lexer::handleOperator() {
     
     if (isOperator(state.c)) {
         tmp.push_back(state.c);
-        if (isTokDoubleOperator(tmp)) {
+        if (isLexemeDoubleOperator(tmp)) {
             handleDoubleOperator(tmp);
             return;
         }
@@ -213,23 +213,23 @@ void Lexer::handleWhiteSpace() {
     flushTok();
     if (state.c == '\n') state.currPos.newLine();
 }
-bool Lexer::isTokInteger(std::string tok) {
+bool Lexer::isLexemeInteger(std::string tok) {
     for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i))) return false;
     }
     return true;
 }
-bool Lexer::isTokFloat(std::string tok) {
+bool Lexer::isLexemeFloat(std::string tok) {
     for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i)) && tok.at(i) != '.') return false;
     }
     return true;
 }
-bool Lexer::isTokOperator(std::string tok) {
+bool Lexer::isLexemeOperator(std::string tok) {
     if (tok.length() == 1 && isOperator(tok.at(0))) return true;
     return false;
 }
-bool Lexer::isTokKeyword(std::string tok) {
+bool Lexer::isLexemeKeyword(std::string tok) {
     if (tok == "if"     || tok == "else"    || tok == "for"    || tok == "while"  ||
         tok == "int"    || tok == "char"    || tok == "bool"   || tok == "true"   || 
         tok == "false"  || tok == "double"  || tok == "string" || tok == "return" ||
@@ -238,12 +238,12 @@ bool Lexer::isTokKeyword(std::string tok) {
     ) return true;
     return false;
 }
-bool Lexer::isTokIdentifier(std::string tok) {
+bool Lexer::isLexemeIdentifier(std::string tok) {
     if (tok.length() == 0 ||
         isNum(tok.at(0))  || 
         tok.at(0) == '\'' || // Is CHAR_TOK
         tok.at(0) == '\"' || // Is STRING_TOK
-        isTokKeyword(tok)
+        isLexemeKeyword(tok)
     ) return false;
 
     for (int i = 0; i < tok.length(); i++) {
@@ -251,15 +251,15 @@ bool Lexer::isTokIdentifier(std::string tok) {
     } 
     return true;
 }
-bool Lexer::isTokSeparator(std::string tok) {
+bool Lexer::isLexemeSeparator(std::string tok) {
     if (tok.length() == 1 && isSeparator(tok.at(0))) return true;
     return false;
 }
-bool Lexer::isTokSemicolon(std::string tok) {
+bool Lexer::isLexemeSemicolon(std::string tok) {
     if (tok.length() == 1 && tok.at(0) == ';') return true;
     return false;
 }
-bool Lexer::isTokCharLiteral(std::string tok) {
+bool Lexer::isLexemeCharLiteral(std::string tok) {
     if (tok.length() == 3 &&
         tok.at(0) == '\'' &&
         tok.at(2) == '\'' &&
@@ -272,7 +272,7 @@ bool Lexer::isTokCharLiteral(std::string tok) {
     ) return true;
     return false;
 }
-bool Lexer::isTokStringLiteral(std::string tok) {
+bool Lexer::isLexemeStringLiteral(std::string tok) {
     if (tok.length() < 2 ||
         tok.at(0) != '\"' ||
         tok.at(tok.length() - 1) != '\"'
@@ -282,7 +282,7 @@ bool Lexer::isTokStringLiteral(std::string tok) {
 /* Possible operators: 
     Ideas: := # @ $ % \ : ~ +? -? *? /? =? <? >? ^? @? :~ ~: =~ ** <...> 
 */
-bool Lexer::isTokDoubleOperator(std::string tok) {
+bool Lexer::isLexemeDoubleOperator(std::string tok) {
     
     if (tok.length() != 2) return false;
     if (tok != "==" &&
@@ -303,16 +303,16 @@ bool Lexer::isTokDoubleOperator(std::string tok) {
 TokenType Lexer::categorize(std::string tok) {
     
     // Order is imperative
-    if (isTokSemicolon(tok))           return SEMICOLON_TOK;
-    else if (isTokSeparator(tok))      return SEPARATOR_TOK;
-    else if (isTokDoubleOperator(tok)) return DOUBLE_OPERATOR_TOK;
-    else if (isTokOperator(tok))       return OPERATOR_TOK;
-    else if (isTokInteger(tok))        return INTEGER_TOK;
-    else if (isTokFloat(tok))          return FLOAT_TOK;
-    else if (isTokKeyword(tok))        return KEYWORD_TOK;
-    else if (isTokIdentifier(tok))     return IDENTIFIER_TOK;
-    else if (isTokCharLiteral(tok))    return CHAR_TOK;
-    else if (isTokStringLiteral(tok))  return STRING_TOK;
+    if (isLexemeSemicolon(tok))           return SEMICOLON_TOK;
+    else if (isLexemeSeparator(tok))      return SEPARATOR_TOK;
+    else if (isLexemeDoubleOperator(tok)) return DOUBLE_OPERATOR_TOK;
+    else if (isLexemeOperator(tok))       return OPERATOR_TOK;
+    else if (isLexemeInteger(tok))        return INTEGER_TOK;
+    else if (isLexemeFloat(tok))          return FLOAT_TOK;
+    else if (isLexemeKeyword(tok))        return KEYWORD_TOK;
+    else if (isLexemeIdentifier(tok))     return IDENTIFIER_TOK;
+    else if (isLexemeCharLiteral(tok))    return CHAR_TOK;
+    else if (isLexemeStringLiteral(tok))  return STRING_TOK;
 
     std::cout << "Invalid token: " << tok << std::endl;
     return INVALID_TOK;

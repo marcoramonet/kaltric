@@ -86,7 +86,7 @@ void Tester::setup(){
                 Token(SEPARATOR_TOK,  "{",         {9, 6}),
 
                 Token(KEYWORD_TOK,  "char",        {10, 5}),
-                Token(IDENTIFIER_TOK, "x",         {10, 10}),
+                Token(IDENTIFIER_TOK, "a",         {10, 10}),
                 Token(OPERATOR_TOK,   "=",         {10, 12}),
                 Token(CHAR_TOK,   "\'t\'",         {10, 14}),
                 Token(SEMICOLON_TOK,   ";",        {10, 17}),
