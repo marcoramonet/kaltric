@@ -12,6 +12,4 @@ Currently it is in an early stage, but eventually it will become a playground fo
 - MAYBE: Make overloaded version of tokenize (with string parameter) state-independent
 - Right now lexer is disposable
 
-
-
 ### BUGs:

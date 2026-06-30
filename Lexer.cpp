@@ -138,7 +138,6 @@ void Lexer::handleCharLiteral() {
     }
 
     state.tokBuf = "";
-    // char ch = s.file.get();
     char ch = state.file.get();
     state.tokBuf.push_back(ch);
 
@@ -150,7 +149,8 @@ void Lexer::handleCharLiteral() {
             exit(2);
         }
     }
-    flushTok();
+    flushTok(state.currPos);
+    state.currPos += 2;
     state.file.seekg(-1, std::fstream::cur);
 }
 void Lexer::handleStringLiteral() {
@@ -162,6 +162,7 @@ void Lexer::handleStringLiteral() {
     state.tokBuf = "";
     char ch = state.file.get();
     state.tokBuf.push_back(ch);
+    FilePosition strStart = state.currPos;
 
     while ((ch = state.file.get())) {
         state.tokBuf.push_back(ch);
@@ -172,7 +173,7 @@ void Lexer::handleStringLiteral() {
             exit(2);
         }
     }
-    flushTok();
+    flushTok(strStart);
     state.file.seekg(-1, std::fstream::cur);
 }; 
 

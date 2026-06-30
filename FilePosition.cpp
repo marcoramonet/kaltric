@@ -37,14 +37,17 @@ std::string FilePosition::toString() {
     return ss.str();
 }
 bool FilePosition::operator==(FilePosition rhs) {
-    if (this->line == rhs.line &&
-        this->col == rhs.col
-    ) return true;
-    return false;
+    if (this->line != rhs.line ||
+        this->col != rhs.col
+    ) return false;
+    return true;
 }
 bool FilePosition::operator!=(FilePosition rhs) {
     if (this->line != rhs.line ||
         this->col != rhs.col
     ) return true;
     return false;
+}
+void FilePosition::operator+=(unsigned int rhs) {
+    this->col += rhs;
 }
