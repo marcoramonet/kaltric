@@ -8,7 +8,6 @@ Currently it is in an early stage, but eventually it will become a playground fo
 - Implement hex, oct, and binary numerals
 
 #### Lex refactor
-- Handle: "case '\n': // This may be introducing a bug" in Lexer.cpp
 - Check for valid state before making operations in state dependent functions
 - MAYBE: Make overloaded version of tokenize (with string parameter) state-independent
 - Right now lexer is disposable
