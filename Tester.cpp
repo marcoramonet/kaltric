@@ -217,7 +217,6 @@ void Tester::run() {
 
         if (outToks.size() != tUnits.at(currUnitIdx).toks.size()) {
             std::cout << "Number of tokens does not equal test. Test failed." << std::endl;
-            break;
         }
 
 

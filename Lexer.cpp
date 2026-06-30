@@ -106,19 +106,32 @@ void Lexer::consume() {
 void Lexer::flushTok() {
     if (state.tokBuf.length() > 0) {
         state.tokens.push_back(
-            Token(categorize(state.tokBuf), 
-            state.tokBuf, 
-            FilePosition(state.currPos.getLine(), state.currPos.getCol() - state.tokBuf.length()))
+            Token(
+                categorize(state.tokBuf), 
+                state.tokBuf, 
+                FilePosition(state.currPos.getLine(), state.currPos.getCol() - state.tokBuf.length())
+            )
         );
         state.tokBuf = "";
     }
 }
-void Lexer::handleSingleCharTok(){
-
+void Lexer::flushTok(FilePosition pos) {
+    if (state.tokBuf.length() > 0) {
+        state.tokens.push_back(
+            Token(
+                categorize(state.tokBuf), 
+                state.tokBuf, 
+                pos
+            )
+        );
+        state.tokBuf = "";
+    }
+}
+void Lexer::handleSeparatorTok(){
     flushTok();
     state.tokBuf.push_back(state.c);
-    flushTok();
-};
+    flushTok(state.currPos);
+}
 void Lexer::handleCharLiteral() {
     if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleCharLiteral: Token buffer should be empty" << std::endl; 
@@ -321,9 +334,9 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
             handleOperator();
             
         } else if (isSeparator(state.c) || state.c == ';') {
-            handleSingleCharTok();
+            handleSeparatorTok();
             
-        } else if(isAlpha(state.c) || isNum(state.c)) {  // general case: identifier
+        } else if(isAlpha(state.c) || isNum(state.c)) {  // general case: identifier number literal
             state.tokBuf.push_back(state.c);
             
         } else if (isWhitespace(state.c)) {
@@ -332,8 +345,6 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
         } else {
             std::cerr << "\033[1;31mError\033[0m Character " << state.c << " not supported." << std::endl;
         }
-        
-        // std::cout << state.toString() << std::endl;
 
         consume();
     }

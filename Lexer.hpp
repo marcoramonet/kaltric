@@ -46,8 +46,9 @@ class Lexer {
     /**
      * State dependent functions used in tokenize()
      */
+    void flushTok(FilePosition pos);
     void flushTok();
-    void handleSingleCharTok();
+    void handleSeparatorTok();
     void handleCharLiteral();
     void handleStringLiteral();
     void handleOperator();
