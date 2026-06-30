@@ -149,8 +149,26 @@ void Tester::setup(){
                 Token(OPERATOR_TOK, "/", {1,10}),
                 Token(OPERATOR_TOK, "*", {1,12}),
                 Token(OPERATOR_TOK, "-", {1,14}),
-                Token(OPERATOR_TOK, "+", {1,16})
-                }
+                Token(OPERATOR_TOK, "+", {1,16}),
+                
+                Token(DOUBLE_OPERATOR_TOK, "++", {2,1}),
+                Token(DOUBLE_OPERATOR_TOK, "--", {2,4}),
+                
+                Token(INTEGER_TOK, "5",     {3,1}),
+                Token(OPERATOR_TOK, "+",    {3,2}),
+                Token(INTEGER_TOK, "5",     {3,3}),
+                Token(OPERATOR_TOK, "=",    {3,4}),
+                Token(DOUBLE_OPERATOR_TOK, "++",    {3,5}),
+                Token(INTEGER_TOK, "7",     {3,7}),
+                
+                Token(IDENTIFIER_TOK, "x",          {4,1}),
+                Token(DOUBLE_OPERATOR_TOK, "&&",    {4,2}),
+                Token(IDENTIFIER_TOK, "y",          {4,4}),
+                Token(DOUBLE_OPERATOR_TOK, "||",    {4,5}),
+                Token(IDENTIFIER_TOK, "y",          {4,7}),
+                Token(DOUBLE_OPERATOR_TOK, "&&",    {4,8}),
+                Token(IDENTIFIER_TOK, "z",          {4,10}),
+            }
             )
         )
     );
