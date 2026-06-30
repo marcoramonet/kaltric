@@ -97,7 +97,6 @@ bool Lexer::isOperator(char c) {
         return false;
     }
 }
-
 void Lexer::consume() {
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
@@ -176,24 +175,39 @@ void Lexer::handleStringLiteral() {
     flushTok();
     state.file.seekg(-1, std::fstream::cur);
 }; 
-/* void Lexer::handleOperator() {
+
+void Lexer::handleSingleOperator() {
     flushTok();
     state.tokBuf.push_back(state.c);
+    flushTok(state.currPos);
+}
+void Lexer::handleDoubleOperator(std::string doubleOp) {
+    state.tokBuf.append(doubleOp);
+    flushTok(state.currPos);
+    state.currPos++;
+}
+void Lexer::handleOperator() {
+
+    flushTok();
+
+    std::string tmp = "";
+
+    tmp.push_back(state.c);
+
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
-
-    if (isOperator(state.c)) { // Double Operator Token
-        state.tokBuf.push_back(state.c);
-        flushTok();
+    
+    if (isOperator(state.c)) {
+        tmp.push_back(state.c);
+        if (isTokDoubleOperator(tmp)) {
+            handleDoubleOperator(tmp);
+            return;
+        }
     }
-    else { // Single Operator Token
-        flushTok();
-        state.file.seekg(-1, std::fstream::cur);
-    }
-} */
-void Lexer::handleOperator() {
-    flushTok();
-    state.tokBuf.push_back(state.c);
+    // reset and do single
+    state.file.seekg(-1, std::fstream::cur);
+    state.c = state.file.peek();
+    handleSingleOperator();
 }
 void Lexer::handleWhiteSpace() {
     flushTok();
@@ -345,6 +359,8 @@ std::vector<Token> Lexer::tokenize(std::string filename) {
         } else {
             std::cerr << "\033[1;31mError\033[0m Character " << state.c << " not supported." << std::endl;
         }
+
+        // std::cout << state.toString() << std::endl;
 
         consume();
     }

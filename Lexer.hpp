@@ -51,6 +51,8 @@ class Lexer {
     void handleSeparatorTok();
     void handleCharLiteral();
     void handleStringLiteral();
+    void handleSingleOperator();
+    void handleDoubleOperator(std::string doubleOp);
     void handleOperator();
     void handleWhiteSpace();
     bool checkNHandleEOF();
