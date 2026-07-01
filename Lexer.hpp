@@ -46,12 +46,17 @@ class Lexer {
     /**
      * State dependent functions used in tokenize()
      */
+    void flushTok(FilePosition pos);
     void flushTok();
-    void handleSingleCharTok();
+    void handleSeparatorTok();
     void handleCharLiteral();
     void handleStringLiteral();
+    void handleSingleOperator();
+    void handleDoubleOperator(std::string doubleOp);
     void handleOperator();
-    bool loopLogic();
+    void handleWhiteSpace();
+    bool checkNHandleEOF();
+    void consume();
     
     public:
     Lexer() : state() {}
@@ -65,16 +70,16 @@ class Lexer {
     bool isWhitespace(char c);
     bool isSeparator(char c);
     bool isOperator(char c);
-    bool isTokInteger(std::string tok);
-    bool isTokFloat(std::string tok);
-    bool isTokOperator(std::string tok);
-    bool isTokKeyword(std::string tok);
-    bool isTokIdentifier(std::string tok);
-    bool isTokSeparator(std::string tok);
-    bool isTokSemicolon(std::string tok);
-    bool isTokCharLiteral(std::string tok);
-    bool isTokStringLiteral(std::string tok);
-    bool isTokDoubleOperator(std::string tok);
+    bool isLexemeInteger(std::string tok);
+    bool isLexemeFloat(std::string tok);
+    bool isLexemeOperator(std::string tok);
+    bool isLexemeKeyword(std::string tok);
+    bool isLexemeIdentifier(std::string tok);
+    bool isLexemeSeparator(std::string tok);
+    bool isLexemeSemicolon(std::string tok);
+    bool isLexemeCharLiteral(std::string tok);
+    bool isLexemeStringLiteral(std::string tok);
+    bool isLexemeDoubleOperator(std::string tok);
     
     /**
       * Main interface.

@@ -23,5 +23,6 @@ class FilePosition {
     std::string toString();
     bool operator==(FilePosition rhs);
     bool operator!=(FilePosition rhs);
+    void operator+=(unsigned int rhs);
 };
-#endif
+#endif 

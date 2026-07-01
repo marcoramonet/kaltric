@@ -1,6 +1,8 @@
 #include "Lexer.hpp"
 #include "utils.hpp"
 
+
+/*------------------------------------------LEX STATE------------------------------------------*/
 LexState::LexState() {
     tokBuf = "";
     c = EOF;
@@ -12,15 +14,14 @@ LexState::LexState(std::string filePath) : file(filePath) {
     if (!file.is_open()) {
         std::cout << "Error opening file" << std::endl;
         valid = false;
+    } else {
+        tokBuf = "";
+        c = EOF;
+        tokens = {};
+        currPos = FilePosition();
+        valid = true; 
     }
-    // file = f;
-    tokBuf = "";
-    c = EOF;
-    tokens = {};
-    currPos = FilePosition();
-    valid = true;
 }
-
 std::string LexState::toString() {
     std::stringstream ss;
     ss << valid << "\n" << 
@@ -38,28 +39,26 @@ std::string LexState::toString() {
     return ss.str();
 }
 
+/*------------------------------------------LEXER------------------------------------------*/
 bool Lexer::isNum(char c) {
     if (c >= ASCII_NUM_FIRST && c <= ASCII_NUM_LAST) return true;
     return false;
 }
-
 bool Lexer::isAlpha(char c) {
     if ((c >= ASCII_ALPHA_UPPERCASE_FIRST && c <= ASCII_ALPHA_UPPERCASE_LAST) ||
         (c >= ASCII_ALPHA_LOWERCASE_FIRST && c <= ASCII_ALPHA_LOWERCASE_LAST)) return true;
     return false;
 }
-
 bool Lexer::isWhitespace(char c) {
     switch (c) {
         case ' ':
         case '\t':
-        case '\n': // This may be introducing a bug
+        case '\n':
             return true;
         default:
             return false;
     }
 }
-
 bool Lexer::isSeparator(char c) {
     switch (c) {
         case '(':
@@ -78,7 +77,6 @@ bool Lexer::isSeparator(char c) {
 
     return false;
 }
-
 bool Lexer::isOperator(char c) {
     switch (c) {
         case '+':
@@ -99,25 +97,40 @@ bool Lexer::isOperator(char c) {
         return false;
     }
 }
-
+void Lexer::consume() {
+    state.file.seekg(1, std::fstream::cur);
+    state.c = state.file.peek();
+    state.currPos++;
+}
 void Lexer::flushTok() {
     if (state.tokBuf.length() > 0) {
         state.tokens.push_back(
-            Token(categorize(state.tokBuf), 
-            state.tokBuf, 
-            FilePosition(state.currPos.getLine(), state.currPos.getCol() - state.tokBuf.length()))
+            Token(
+                categorize(state.tokBuf), 
+                state.tokBuf, 
+                FilePosition(state.currPos.getLine(), state.currPos.getCol() - state.tokBuf.length())
+            )
         );
         state.tokBuf = "";
     }
 }
-
-void Lexer::handleSingleCharTok(){
-
-    flushTok(); // Flush curr tok buff if not empty
-    state.tokBuf.push_back(state.c); // Add and flush new separator tok
+void Lexer::flushTok(FilePosition pos) {
+    if (state.tokBuf.length() > 0) {
+        state.tokens.push_back(
+            Token(
+                categorize(state.tokBuf), 
+                state.tokBuf, 
+                pos
+            )
+        );
+        state.tokBuf = "";
+    }
+}
+void Lexer::handleSeparatorTok(){
     flushTok();
-};
-
+    state.tokBuf.push_back(state.c);
+    flushTok(state.currPos);
+}
 void Lexer::handleCharLiteral() {
     if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleCharLiteral: Token buffer should be empty" << std::endl; 
@@ -125,7 +138,6 @@ void Lexer::handleCharLiteral() {
     }
 
     state.tokBuf = "";
-    // char ch = s.file.get();
     char ch = state.file.get();
     state.tokBuf.push_back(ch);
 
@@ -137,10 +149,10 @@ void Lexer::handleCharLiteral() {
             exit(2);
         }
     }
-    flushTok();
+    flushTok(state.currPos);
+    state.currPos += 2;
     state.file.seekg(-1, std::fstream::cur);
 }
-
 void Lexer::handleStringLiteral() {
     if (state.tokBuf.length() > 0) { // Temporary
         std::cerr << "Error in HandleStringLiteral: Token buffer should be empty: Previous token is incorrect." << std::endl; 
@@ -150,6 +162,7 @@ void Lexer::handleStringLiteral() {
     state.tokBuf = "";
     char ch = state.file.get();
     state.tokBuf.push_back(ch);
+    FilePosition strStart = state.currPos;
 
     while ((ch = state.file.get())) {
         state.tokBuf.push_back(ch);
@@ -160,43 +173,64 @@ void Lexer::handleStringLiteral() {
             exit(2);
         }
     }
-    flushTok();
+    flushTok(strStart);
     state.file.seekg(-1, std::fstream::cur);
-};
-    
-void Lexer::handleOperator() {
+}; 
+
+void Lexer::handleSingleOperator() {
     flushTok();
     state.tokBuf.push_back(state.c);
+    flushTok(state.currPos);
+}
+void Lexer::handleDoubleOperator(std::string doubleOp) {
+    state.tokBuf.append(doubleOp);
+    flushTok(state.currPos);
+    state.currPos++;
+}
+void Lexer::handleOperator() {
+
+    flushTok();
+
+    std::string tmp = "";
+
+    tmp.push_back(state.c);
+
     state.file.seekg(1, std::fstream::cur);
     state.c = state.file.peek();
-
-    if (isOperator(state.c)) { // Double Operator Token
-        state.tokBuf.push_back(state.c);
-        flushTok();
+    
+    if (isOperator(state.c)) {
+        tmp.push_back(state.c);
+        if (isLexemeDoubleOperator(tmp)) {
+            handleDoubleOperator(tmp);
+            return;
+        }
     }
-    else { // Single Operator Token
-        flushTok();
-        state.file.seekg(-1, std::fstream::cur);
-    }
+    // reset and do single
+    state.file.seekg(-1, std::fstream::cur);
+    state.c = state.file.peek();
+    handleSingleOperator();
 }
-
-bool Lexer::isTokInteger(std::string tok) {
+void Lexer::handleWhiteSpace() {
+    flushTok();
+    if (state.c == '\n') state.currPos.newLine();
+}
+bool Lexer::isLexemeInteger(std::string tok) {
     for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i))) return false;
     }
     return true;
 }
-bool Lexer::isTokFloat(std::string tok) {
+bool Lexer::isLexemeFloat(std::string tok) {
     for (int i = 0; i < tok.length(); i++) {
         if (!isNum(tok.at(i)) && tok.at(i) != '.') return false;
     }
     return true;
 }
-bool Lexer::isTokOperator(std::string tok) {
+bool Lexer::isLexemeOperator(std::string tok) {
     if (tok.length() == 1 && isOperator(tok.at(0))) return true;
     return false;
 }
-bool Lexer::isTokKeyword(std::string tok) {
+bool Lexer::isLexemeKeyword(std::string tok) {
     if (tok == "if"     || tok == "else"    || tok == "for"    || tok == "while"  ||
         tok == "int"    || tok == "char"    || tok == "bool"   || tok == "true"   || 
         tok == "false"  || tok == "double"  || tok == "string" || tok == "return" ||
@@ -205,12 +239,12 @@ bool Lexer::isTokKeyword(std::string tok) {
     ) return true;
     return false;
 }
-bool Lexer::isTokIdentifier(std::string tok) {
+bool Lexer::isLexemeIdentifier(std::string tok) {
     if (tok.length() == 0 ||
         isNum(tok.at(0))  || 
         tok.at(0) == '\'' || // Is CHAR_TOK
         tok.at(0) == '\"' || // Is STRING_TOK
-        isTokKeyword(tok)
+        isLexemeKeyword(tok)
     ) return false;
 
     for (int i = 0; i < tok.length(); i++) {
@@ -218,15 +252,15 @@ bool Lexer::isTokIdentifier(std::string tok) {
     } 
     return true;
 }
-bool Lexer::isTokSeparator(std::string tok) {
+bool Lexer::isLexemeSeparator(std::string tok) {
     if (tok.length() == 1 && isSeparator(tok.at(0))) return true;
     return false;
 }
-bool Lexer::isTokSemicolon(std::string tok) {
+bool Lexer::isLexemeSemicolon(std::string tok) {
     if (tok.length() == 1 && tok.at(0) == ';') return true;
     return false;
 }
-bool Lexer::isTokCharLiteral(std::string tok) {
+bool Lexer::isLexemeCharLiteral(std::string tok) {
     if (tok.length() == 3 &&
         tok.at(0) == '\'' &&
         tok.at(2) == '\'' &&
@@ -239,7 +273,7 @@ bool Lexer::isTokCharLiteral(std::string tok) {
     ) return true;
     return false;
 }
-bool Lexer::isTokStringLiteral(std::string tok) {
+bool Lexer::isLexemeStringLiteral(std::string tok) {
     if (tok.length() < 2 ||
         tok.at(0) != '\"' ||
         tok.at(tok.length() - 1) != '\"'
@@ -249,7 +283,7 @@ bool Lexer::isTokStringLiteral(std::string tok) {
 /* Possible operators: 
     Ideas: := # @ $ % \ : ~ +? -? *? /? =? <? >? ^? @? :~ ~: =~ ** <...> 
 */
-bool Lexer::isTokDoubleOperator(std::string tok) {
+bool Lexer::isLexemeDoubleOperator(std::string tok) {
     
     if (tok.length() != 2) return false;
     if (tok != "==" &&
@@ -267,86 +301,71 @@ bool Lexer::isTokDoubleOperator(std::string tok) {
     ) return false;
     return true;
 }
-
-
 TokenType Lexer::categorize(std::string tok) {
     
     // Order is imperative
-    if (isTokSemicolon(tok))           return SEMICOLON_TOK;
-    else if (isTokSeparator(tok))      return SEPARATOR_TOK;
-    else if (isTokDoubleOperator(tok)) return DOUBLE_OPERATOR_TOK;
-    else if (isTokOperator(tok))       return OPERATOR_TOK;
-    else if (isTokInteger(tok))        return INTEGER_TOK;
-    else if (isTokFloat(tok))          return FLOAT_TOK;
-    else if (isTokKeyword(tok))        return KEYWORD_TOK;
-    else if (isTokIdentifier(tok))     return IDENTIFIER_TOK;
-    else if (isTokCharLiteral(tok))    return CHAR_TOK;
-    else if (isTokStringLiteral(tok))  return STRING_TOK;
+    if (isLexemeSemicolon(tok))           return SEMICOLON_TOK;
+    else if (isLexemeSeparator(tok))      return SEPARATOR_TOK;
+    else if (isLexemeDoubleOperator(tok)) return DOUBLE_OPERATOR_TOK;
+    else if (isLexemeOperator(tok))       return OPERATOR_TOK;
+    else if (isLexemeInteger(tok))        return INTEGER_TOK;
+    else if (isLexemeFloat(tok))          return FLOAT_TOK;
+    else if (isLexemeKeyword(tok))        return KEYWORD_TOK;
+    else if (isLexemeIdentifier(tok))     return IDENTIFIER_TOK;
+    else if (isLexemeCharLiteral(tok))    return CHAR_TOK;
+    else if (isLexemeStringLiteral(tok))  return STRING_TOK;
 
     std::cout << "Invalid token: " << tok << std::endl;
     return INVALID_TOK;
 }
-
-/**
- * Returns 'shouldStopLoop' boolean
- */
-bool Lexer::loopLogic() {
-    // Next char
-    state.file.seekg(1, std::fstream::cur);
-    state.c = state.file.peek();
-    // state.c = state.file.get();
-    state.currPos++;
-
-    if (state.c != EOF) {
-        if (state.c == '\n') {
-            flushTok();
-            state.currPos.newLine();
-        }
-        return false;
-
-    } else { // EOF: Flush last token
-        flushTok();
+bool Lexer::checkNHandleEOF() {
+    if (!state.file.eof()) 
         return true;
+    else {
+        flushTok();
+        return false;
     }
 }
-
 std::vector<Token> Lexer::tokenize(std::string filename) {
-    // if (!state.valid) {
-    //     std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state. \
-    //     Make sure you have passed a filename to tokenize()." << std::endl;
-    // }
+    
     state = LexState(filename);
 
-    state.c = state.file.peek();
-    // state.c = state.file.get();
-    // state.currPos++;
-    
-    bool stop = false;
+    if (!state.valid) {
+        std::cerr << "\033[1;31mError\033[0m: Attempting to tokenize with invalid lexer state. Check file validity." << std::endl;
+        return {}; 
+    }
 
-    while (!stop) {
+    state.c = state.file.peek();
+
+    while (checkNHandleEOF()) {
         
         if (state.c == '\'') {
             handleCharLiteral();
-
+            
         } else if (state.c == '\"') {
             handleStringLiteral();
-
+            
         } else if (isOperator(state.c)) {
             handleOperator();
-
+            
         } else if (isSeparator(state.c) || state.c == ';') {
-            handleSingleCharTok();
-
-        } else if(!isWhitespace(state.c)) {  // general case
+            handleSeparatorTok();
+            
+        } else if(isAlpha(state.c) || isNum(state.c)) {  // general case: identifier number literal
             state.tokBuf.push_back(state.c);
-
-        } else { // Flush tok in whitespace
-            flushTok();
+            
+        } else if (isWhitespace(state.c)) {
+            handleWhiteSpace();
+            
+        } else {
+            std::cerr << "\033[1;31mError\033[0m Character " << state.c << " not supported." << std::endl;
         }
 
-        // Loop logic
-        stop = loopLogic();
+        // std::cout << state.toString() << std::endl;
+
+        consume();
     }
+
     state.file.close();
     
     return state.tokens;
